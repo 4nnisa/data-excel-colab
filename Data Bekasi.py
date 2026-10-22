@@ -10,35 +10,75 @@ st.set_page_config(
 )
 
 # =========================
-# TEMA PINK PASTEL
+# TEMA PINK PASTEL + FONT HITAM
 # =========================
 st.markdown("""
 <style>
 .stApp {
     background-color: #FFF7FA;
 }
+
+/* Sidebar pink pastel */
 [data-testid="stSidebar"] {
     background-color: #FCE8F0;
 }
-h1, h2, h3 {
-    color: #A63D68;
+
+/* Semua tulisan dashboard menjadi hitam */
+.stApp,
+.stApp p,
+.stApp label,
+.stApp h1,
+.stApp h2,
+.stApp h3,
+.stApp span,
+.stApp small,
+.stApp li,
+[data-testid="stSidebar"],
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] h1,
+[data-testid="stSidebar"] h2,
+[data-testid="stSidebar"] h3,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] span,
+[data-testid="stSidebar"] small,
+[data-testid="stSidebar"] div,
+[data-testid="stMetricLabel"],
+[data-testid="stMetricValue"],
+[data-testid="stMetricDelta"],
+[data-testid="stDataFrame"],
+.stSelectbox,
+.stMultiSelect,
+.stRadio {
+    color: #000000;
 }
+
+/* Kartu statistik */
 div[data-testid="stMetric"] {
     background-color: #FFFFFF;
     border: 1px solid #F2C6D8;
     padding: 18px;
     border-radius: 15px;
 }
+
+/* Tombol pink pastel */
 .stButton > button {
     background-color: #E8A3BE;
-    color: white;
+    color: #000000;
     border-radius: 10px;
-    border: none;
+    border: 1px solid #D98EAD;
+}
+
+/* Latar input */
+.stSelectbox div[data-baseweb="select"],
+.stMultiSelect div[data-baseweb="select"] {
+    background-color: #FFFFFF;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# Warna grafik pink pastel
+# =========================
+# WARNA GRAFIK TETAP
+# =========================
 WARNA = [
     "#D98EAD", "#EAB8CC", "#C87598",
     "#F2CEDC", "#B85C83", "#F5DCE6"
@@ -49,12 +89,19 @@ WARNA = [
 # =========================
 @st.cache_data
 def baca_data():
-    return pd.read_csv("dataset_fiskal.csv", sep=None, engine="python")
+    return pd.read_csv(
+        "dataset_fiskal.csv",
+        sep=None,
+        engine="python"
+    )
 
 try:
     data = baca_data()
-except Exception as e:
-    st.error("Dataset gagal dibaca. Pastikan dataset_fiskal.csv ada di GitHub.")
+except Exception:
+    st.error(
+        "Dataset gagal dibaca. Pastikan dataset_fiskal.csv "
+        "ada di repository GitHub."
+    )
     st.stop()
 
 # Periksa kolom
@@ -88,11 +135,16 @@ st.sidebar.divider()
 
 daftar_kota = sorted(data["Kota"].dropna().unique())
 
+pilihan_awal = (
+    ["Kota Bekasi"]
+    if "Kota Bekasi" in daftar_kota
+    else daftar_kota[:1]
+)
+
 pilihan_kota = st.sidebar.multiselect(
     "Pilih kota",
     daftar_kota,
-    default=["Kota Bekasi"] if "Kota Bekasi" in daftar_kota
-    else daftar_kota[:1]
+    default=pilihan_awal
 )
 
 if not pilihan_kota:
@@ -101,8 +153,7 @@ if not pilihan_kota:
 
 df = data[data["Kota"].isin(pilihan_kota)].copy()
 
-df["Tahun"] = pd.to_numeric(df["Tahun"], errors="coerce")
-for kolom in ["PE", "bm_ekonomi", "bm_infrastruktur"]:
+for kolom in ["Tahun", "PE", "bm_ekonomi", "bm_infrastruktur"]:
     df[kolom] = pd.to_numeric(df[kolom], errors="coerce")
 
 df = df.dropna(
@@ -114,7 +165,7 @@ if df.empty:
     st.stop()
 
 # =========================
-# JUDUL
+# JUDUL DASHBOARD
 # =========================
 st.title("🌸 Dashboard Analisis Data Fiskal")
 st.write(
@@ -295,7 +346,9 @@ elif halaman == "Analisis Mendalam":
             "hubungan sebab-akibat."
         )
     else:
-        st.warning("Diperlukan minimal dua observasi untuk menghitung korelasi.")
+        st.warning(
+            "Diperlukan minimal dua observasi untuk menghitung korelasi."
+        )
 
     st.subheader("Statistik Ringkas")
     st.dataframe(angka.describe(), use_container_width=True)
