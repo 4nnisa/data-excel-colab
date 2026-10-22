@@ -5,15 +5,13 @@ import matplotlib.pyplot as plt
 
 # Judul aplikasi
 st.title("Analisis Data Fiskal Kota Bekasi")
-st.write("Aplikasi sederhana untuk analisis data fiskal.")
+st.write("Analisis data belanja dan pertumbuhan ekonomi.")
 
-# Upload file CSV
-file = st.file_uploader("Upload dataset CSV", type=["csv"])
+# Membaca dataset
+try:
+    df = pd.read_csv("dataset_fiskal.csv")
 
-if file is not None:
-    df = pd.read_csv(file)
-
-    # Memilih data Kota Bekasi
+    # Filter Kota Bekasi
     if "Kota" in df.columns:
         df = df[df["Kota"] == "Kota Bekasi"]
 
@@ -24,22 +22,18 @@ if file is not None:
     st.subheader("Statistik Deskriptif")
     st.write(df.describe())
 
-    # Grafik hubungan variabel
-    if all(kolom in df.columns for kolom in
-           ["bm_ekonomi", "PE"]):
-
-        st.subheader("Grafik Belanja Ekonomi dan PE")
-
+    # Grafik
+    if "bm_ekonomi" in df.columns and "PE" in df.columns:
         fig, ax = plt.subplots()
         ax.scatter(df["bm_ekonomi"], df["PE"])
         ax.set_xlabel("Belanja Ekonomi")
-        ax.set_ylabel("Pertumbuhan Ekonomi (PE)")
-        ax.set_title("Hubungan Belanja Ekonomi dengan PE")
+        ax.set_ylabel("Pertumbuhan Ekonomi")
+        ax.set_title("Belanja Ekonomi dan PE")
 
         st.pyplot(fig)
-
     else:
         st.warning("Kolom bm_ekonomi atau PE tidak ditemukan.")
 
-else:
-    st.info("Silakan upload file dataset CSV terlebih dahulu.")
+except FileNotFoundError:
+    st.error("File dataset_fiskal.csv tidak ditemukan di repository GitHub.")
+    
